@@ -55,10 +55,11 @@ class CalorieTracker {
 	}
 
 	reset() {
-		this._calorieLimit = 2000;
-		this._totalCalories = 0;
-		this._meals = [];
-		this._workouts = [];
+		Storage.clearAll();
+		this._calorieLimit = Storage.getCalorieLimit();
+		this._totalCalories = Storage.getTotalCalories();
+		this._meals = Storage.getMeals();
+		this._workouts = Storage.getWorkouts();
 		this._render();
 	}
 
@@ -210,6 +211,10 @@ class Storage {
 
 	static setWorkouts(value) {
 		localStorage.setItem('workouts', JSON.stringify(value));
+	}
+
+	static clearAll() {
+		localStorage.clear();
 	}
 }
 
