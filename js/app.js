@@ -10,21 +10,48 @@ class CalorieTracker {
 	addMeal(meal) {
 		this._meals.push(meal);
 		this._totalCalories += meal.calories;
+		this._displayNewItem(meal);
 		this._render();
 	}
 	addWorkout(workout) {
 		this._workouts.push(workout);
 		this._totalCalories -= workout.calories;
+		this._displayNewItem(workout);
 		this._render();
 	}
 
-	_render() {
-		this._displayDailyLimit();
-		this._displayTotalCalories();
-		this._displayBurnedCalories();
-		this._displayConsumedCalories();
-		this._displayRemainingCalories();
-		this._displayProgress();
+	_calcCalories(arr) {
+		return arr.reduce(
+			(accumulator, currentValue) => accumulator + currentValue.calories,
+			0
+		);
+	}
+
+	_displayNewMeal() {}
+
+	_displayNewItem(item) {
+		const type = item instanceof Meal ? 'meal' : 'workout';
+		const itemsEl = document.querySelector(`#${type}-items`);
+		const itemEl = document.createElement('div');
+		itemEl.classList.add('card', 'my-2');
+		itemEl.setAttribute('data-id', item.id);
+
+		itemEl.innerHTML = `
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                <h4 class="mx-1">${item.name}</h4>
+                <div
+                    class="fs-1 bg-${
+						type === 'meal' ? 'primary' : 'secondary'
+					} text-white text-center rounded-2 px-2 px-sm-5"
+                >${item.calories}</div>
+                <button class="delete btn btn-danger btn-sm mx-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                </div>
+            </div>
+        `;
+		itemsEl.appendChild(itemEl);
 	}
 
 	_displayDailyLimit() {
@@ -74,11 +101,13 @@ class CalorieTracker {
 		}
 	}
 
-	_calcCalories(arr) {
-		return arr.reduce(
-			(accumulator, currentValue) => accumulator + currentValue.calories,
-			0
-		);
+	_render() {
+		this._displayDailyLimit();
+		this._displayTotalCalories();
+		this._displayBurnedCalories();
+		this._displayConsumedCalories();
+		this._displayRemainingCalories();
+		this._displayProgress();
 	}
 }
 
@@ -130,16 +159,6 @@ class App {
 				new Workout(nameInput.value, +caloriesInput.value)
 			);
 		}
-		this._resetInputs(nameInput, caloriesInput);
-	}
-
-	_newMeal(e) {
-		e.preventDefault();
-		const nameInput = document.querySelector('#meal-name');
-		const caloriesInput = document.querySelector('#meal-calories');
-		this._tracker.addMeal(
-			new Meal(nameInput.value, Number.parseInt(caloriesInput.value))
-		);
 		this._resetInputs(nameInput, caloriesInput);
 	}
 
