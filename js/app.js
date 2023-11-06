@@ -20,14 +20,29 @@ class CalorieTracker {
 		this._render();
 	}
 
+	removeMeal(id) {
+		this._meals = this._meals.filter((meal) => meal.id !== id);
+		this._totalCalories = this._calcCalories(this._meals);
+		this._render();
+	}
+
+	removeWorkout(id) {
+		const workout = this._workouts.find((el) => el.id === id);
+		if (workout) {
+			this._workouts = this._workouts.filter(
+				(workout) => workout.id !== id
+			);
+			this._totalCalories += workout.calories;
+			this._render();
+		}
+	}
+
 	_calcCalories(arr) {
 		return arr.reduce(
 			(accumulator, currentValue) => accumulator + currentValue.calories,
 			0
 		);
 	}
-
-	_displayNewMeal() {}
 
 	_displayNewItem(item) {
 		const type = item instanceof Meal ? 'meal' : 'workout';
@@ -39,7 +54,7 @@ class CalorieTracker {
 		itemEl.innerHTML = `
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
-                <h4 class="mx-1">${item.name}</h4>
+                <h4 class="mx-1 card-name">${item.name}</h4>
                 <div
                     class="fs-1 bg-${
 						type === 'meal' ? 'primary' : 'secondary'
@@ -143,6 +158,31 @@ class App {
 				'submit',
 				this._newItemHandler.bind(this, 'workout')
 			);
+		document
+			.querySelector('#meal-items')
+			.addEventListener(
+				'click',
+				this._removeItemHandler.bind(this, 'meal')
+			);
+		document
+			.querySelector('#workout-items')
+			.addEventListener(
+				'click',
+				this._removeItemHandler.bind(this, 'workout')
+			);
+
+		document
+			.querySelector('#filter-meals')
+			.addEventListener(
+				'keyup',
+				this._filterItemsHandler.bind(this, 'meal')
+			);
+		document
+			.querySelector('#filter-workouts')
+			.addEventListener(
+				'keyup',
+				this._filterItemsHandler.bind(this, 'workout')
+			);
 	}
 
 	_newItemHandler(type, e) {
@@ -160,6 +200,34 @@ class App {
 			);
 		}
 		this._resetInputs(nameInput, caloriesInput);
+	}
+
+	_removeItemHandler(type, e) {
+		if (
+			e.target.classList.contains('delete') ||
+			e.target.classList.contains('fa-xmark')
+		) {
+			const item = e.target.closest('.card');
+			const id = item.getAttribute('data-id');
+			if (type === 'meal') {
+				this._tracker.removeMeal(id);
+			} else {
+				this._tracker.removeWorkout(id);
+			}
+			item.remove();
+		}
+	}
+
+	_filterItemsHandler(type, e) {
+		const text = e.target.value.toLowerCase();
+		document.querySelectorAll(`#${type}-items .card`).forEach((card) => {
+			const cardName = card.querySelector('.card-name').textContent;
+			if (cardName.includes(text)) {
+				card.style.display = 'block';
+			} else {
+				card.style.display = 'none';
+			}
+		});
 	}
 
 	_resetInputs(...inputs) {
