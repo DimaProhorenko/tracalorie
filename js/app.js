@@ -98,21 +98,54 @@ class Workout {
 	}
 }
 
-const tracker = new CalorieTracker();
+class App {
+	constructor() {
+		this._tracker = new CalorieTracker();
 
-const breakfast = new Meal('Breakfast', 400);
-tracker.addMeal(breakfast);
+		document
+			.querySelector('#meal-form')
+			.addEventListener(
+				'submit',
+				this._newItemHandler.bind(this, 'meal')
+			);
+		document
+			.querySelector('#workout-form')
+			.addEventListener(
+				'submit',
+				this._newItemHandler.bind(this, 'workout')
+			);
+	}
 
-const run = new Workout('Morning run', 300);
-tracker.addWorkout(run);
+	_newItemHandler(type, e) {
+		e.preventDefault();
+		const nameInput = document.querySelector(`#${type}-name`);
+		const caloriesInput = document.querySelector(`#${type}-calories`);
 
-const lunch = new Meal('Lunch', 800);
-tracker.addMeal(lunch);
+		if (type === 'meal') {
+			this._tracker.addMeal(
+				new Meal(nameInput.value, +caloriesInput.value)
+			);
+		} else {
+			this._tracker.addWorkout(
+				new Workout(nameInput.value, +caloriesInput.value)
+			);
+		}
+		this._resetInputs(nameInput, caloriesInput);
+	}
 
-const dinner = new Meal('Dinner', 1600);
-tracker.addMeal(new Meal('Fuck', 1200));
-// tracker.addMeal(dinner);
+	_newMeal(e) {
+		e.preventDefault();
+		const nameInput = document.querySelector('#meal-name');
+		const caloriesInput = document.querySelector('#meal-calories');
+		this._tracker.addMeal(
+			new Meal(nameInput.value, Number.parseInt(caloriesInput.value))
+		);
+		this._resetInputs(nameInput, caloriesInput);
+	}
 
-console.log(tracker._meals);
-console.log(tracker._workouts);
-console.log(tracker._totalCalories);
+	_resetInputs(...inputs) {
+		inputs.forEach((el) => (el.value = ''));
+	}
+}
+
+const app = new App();
